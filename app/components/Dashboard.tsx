@@ -14,6 +14,18 @@ interface QR {
   createdAt: string;
 }
 
+function CornerMarks({ color = '#C4703F' }: { color?: string }) {
+  const base = 'pointer-events-none absolute w-3 h-3 opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 ease-out';
+  return (
+    <>
+      <span className={`${base} -top-px -left-px border-t-2 border-l-2`} style={{ borderColor: color }} />
+      <span className={`${base} -top-px -right-px border-t-2 border-r-2 delay-30`} style={{ borderColor: color }} />
+      <span className={`${base} -bottom-px -left-px border-b-2 border-l-2 delay-30`} style={{ borderColor: color }} />
+      <span className={`${base} -bottom-px -right-px border-b-2 border-r-2 delay-60`} style={{ borderColor: color }} />
+    </>
+  );
+}
+
 export default function Dashboard() {
   const [qrs, setQrs] = useState<QR[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,69 +51,70 @@ export default function Dashboard() {
       await api.patch(`/api/qr/${id}`, { isActive: !currentStatus });
       fetchMyQRs();
     } catch (err) {
-      alert('Помилка оновлення статусу');
+      alert('Failed to update status');
     }
   };
 
   const copyLink = (slug: string) => {
     navigator.clipboard.writeText(`${BACKEND_URL.replace(/\/$/, '')}/q/${slug}`);
-    alert('Посилання скопійовано!');
+    alert('Link copied!');
   };
 
-  if (loading) return <p className="text-center py-10">Завантаження...</p>;
+  if (loading) return <p className="text-center py-10 text-[#9FB0C3]">Loading...</p>;
 
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-semibold">Мої QR-коди</h2>
-        <p className="text-zinc-400">Керуйте своїми динамічними QR</p>
+        <h2 className="text-2xl font-mono font-semibold">My QR codes</h2>
+        <p className="text-[#9FB0C3] text-sm">Manage your dynamic QR codes</p>
       </div>
 
       {qrs.length === 0 ? (
-        <div className="text-center py-20 bg-zinc-900 rounded-3xl">
-          <QrCode className="w-16 h-16 mx-auto mb-4 text-zinc-600" />
-          <p className="text-xl">У вас ще немає QR-кодів</p>
-          <p className="text-zinc-500 mt-2">Перейдіть у конструктор або генератор, щоб створити перший</p>
+        <div className="text-center py-20 bg-[#16324F] border border-[#2A4A68] rounded-2xl">
+          <QrCode className="w-14 h-14 mx-auto mb-4 text-[#2A4A68]" />
+          <p className="text-lg">You don&apos;t have any QR codes yet</p>
+          <p className="text-[#9FB0C3] mt-2 text-sm">Go to the designer or generator to create your first one</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {qrs.map(qr => (
-            <div key={qr._id} className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+            <div key={qr._id} className="relative group bg-[#16324F] border border-[#2A4A68] rounded-2xl p-6 hover:border-[#C4703F]/40 transition-colors duration-300">
+              <CornerMarks />
               <div className="flex justify-between items-start">
                 <div>
-                  <code className="text-2xl font-mono text-emerald-400">{qr.slug}</code>
-                  <p className="text-sm text-zinc-500 mt-1">
-                    {new Date(qr.createdAt).toLocaleDateString('uk-UA')}
+                  <code className="text-xl font-mono text-[#8FB89A]">{qr.slug}</code>
+                  <p className="text-xs text-[#9FB0C3] mt-1">
+                    {new Date(qr.createdAt).toLocaleDateString('en-US')}
                   </p>
                 </div>
-                <div className={`px-3 py-1 rounded-full text-xs ${qr.isActive ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
-                  {qr.isActive ? 'Активний' : 'Вимкнено'}
+                <div className={`px-3 py-1 rounded-full text-xs font-mono ${qr.isActive ? 'bg-[#5C8A6A]/20 text-[#8FB89A]' : 'bg-[#A8453A]/20 text-[#C8756A]'}`}>
+                  {qr.isActive ? 'Active' : 'Disabled'}
                 </div>
               </div>
 
               <div className="mt-4">
-                <p className="text-sm text-zinc-400">Тип: {qr.targetType}</p>
-                <p className="text-sm break-all text-zinc-300 mt-1">{qr.targetValue}</p>
+                <p className="text-sm text-[#9FB0C3]">Type: {qr.targetType}</p>
+                <p className="text-sm break-all text-[#ECE7DA] mt-1">{qr.targetValue}</p>
               </div>
 
               <div className="mt-6 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-2 text-sm text-[#9FB0C3]">
                   <Eye className="w-4 h-4" />
-                  <span>{qr.scanCount} сканувань</span>
+                  <span>{qr.scanCount} scans</span>
                 </div>
 
                 <div className="flex gap-2">
-                  <button 
+                  <button
                     onClick={() => copyLink(qr.slug)}
-                    className="p-2 hover:bg-zinc-800 rounded-xl transition"
+                    className="p-2 hover:bg-[#0F2A4A] rounded-lg transition-colors duration-300"
                   >
-                    <Copy className="w-5 h-5" />
+                    <Copy className="w-4 h-4" />
                   </button>
-                  <button 
+                  <button
                     onClick={() => toggleQR(qr._id, qr.isActive)}
-                    className="p-2 hover:bg-zinc-800 rounded-xl transition"
+                    className="p-2 hover:bg-[#0F2A4A] rounded-lg transition-colors duration-300"
                   >
-                    {qr.isActive ? <Trash2 className="w-5 h-5 text-red-400" /> : '🔄'}
+                    {qr.isActive ? <Trash2 className="w-4 h-4 text-[#C8756A]" /> : '🔄'}
                   </button>
                 </div>
               </div>
