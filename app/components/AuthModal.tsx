@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../lib/axios';
 import { setToken } from '../lib/auth';
 
 interface AuthModalProps {
@@ -10,6 +10,7 @@ interface AuthModalProps {
   onSuccess: (user: any) => void;
 }
 
+// Signature motif: viewfinder corner marks that resolve into focus on hover.
 function CornerMarks({ color = '#C4703F' }: { color?: string }) {
   const base = 'pointer-events-none absolute w-2.5 h-2.5 opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 ease-out';
   return (
@@ -28,7 +29,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +38,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
       const url = isLogin ? '/api/auth/login' : '/api/auth/register';
       const body = isLogin ? { email, password } : { email, password, name };
 
-      const res = await axios.post(`${API_URL}${url}`, body);
+      const res = await api.post(url, body);
 
       setToken(res.data.token);
       onSuccess(res.data.user);
